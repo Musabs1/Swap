@@ -3,6 +3,9 @@ import "./App.css";
 
 function App() {
   const [listings, setListings] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeCategory, setActiveCategory] = useState("All");
+
   const [formData, setFormData] = useState({
     title: "",
     price: "",
@@ -10,6 +13,8 @@ function App() {
     category: "Electronics",
     description: "",
   });
+
+  const categories = ["All", "Electronics", "Furniture", "Vehicles", "Clothing", "Home Goods", "Other"];
 
   useEffect(() => {
     async function fetchListings() {
@@ -38,7 +43,6 @@ function App() {
     });
 
     const newListing = await response.json();
-
     setListings([newListing, ...listings]);
 
     setFormData({
@@ -50,89 +54,163 @@ function App() {
     });
   }
 
+  const filteredListings = listings.filter((item) => {
+    const matchesSearch = `${item.title} ${item.category} ${item.location} ${item.description}`
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    const matchesCategory = activeCategory === "All" || item.category === activeCategory;
+
+    return matchesSearch && matchesCategory;
+  });
+
   return (
-    <>
-      <nav className="navbar">
-        <div className="logo">Swap</div>
-      </nav>
-
-      <section className="hero">
-        <h1>Buy, sell, and swap locally.</h1>
-        <p>Create real listings and browse items posted on Swap.</p>
-      </section>
-
-      <main className="container">
-        <h2>Create a Listing</h2>
-
-        <form onSubmit={handleSubmit} className="listing-form">
-          <input
-            name="title"
-            placeholder="Item title"
-            value={formData.title}
-            onChange={handleChange}
-            required
-          />
-
-          <input
-            name="price"
-            placeholder="Price"
-            value={formData.price}
-            onChange={handleChange}
-            required
-          />
-
-          <input
-            name="location"
-            placeholder="Location"
-            value={formData.location}
-            onChange={handleChange}
-            required
-          />
-
-          <select
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-          >
-            <option>Electronics</option>
-            <option>Furniture</option>
-            <option>Vehicles</option>
-            <option>Clothing</option>
-            <option>Home Goods</option>
-          </select>
-
-          <textarea
-            name="description"
-            placeholder="Description"
-            value={formData.description}
-            onChange={handleChange}
-            required
-          />
-
-          <button type="submit">Post Listing</button>
-        </form>
-
-        <h2>Listings</h2>
-
-        {listings.length === 0 ? (
-          <p>No listings yet. Create the first one.</p>
-        ) : (
-          <div className="listing-grid">
-            {listings.map((item) => (
-              <div className="card" key={item.id}>
-                <div className="image-placeholder">{item.category}</div>
-                <div className="card-content">
-                  <div className="price">{item.price}</div>
-                  <h3>{item.title}</h3>
-                  <p className="location">{item.location}</p>
-                  <p>{item.description}</p>
-                </div>
-              </div>
-            ))}
+    <div className="app">
+      <div className="shell">
+        <nav className="navbar">
+          <div className="brand">
+            <div className="logo-mark">S</div>
+            <span>Swap</span>
           </div>
-        )}
-      </main>
-    </>
+
+          <div className="nav-links">
+            <span>Home</span>
+            <span>Browse</span>
+            <span>Categories</span>
+          </div>
+
+          <div className="nav-actions">
+            <button className="ghost-button">Sign In</button>
+            <button className="primary-button">Post Listing</button>
+          </div>
+        </nav>
+
+        <section className="hero">
+          <div>
+            <h1>
+              Trade. Save.
+              <br />
+              <span className="blue-text">Sustain.</span>
+            </h1>
+
+            <p className="hero-text">
+              A clean, modern marketplace for buying, selling, and swapping items in your community.
+            </p>
+
+            <div className="search-card">
+              <div className="search-icon">⌕</div>
+              <input
+                placeholder="Search for anything..."
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="hero-visual">
+            <div className="floating-card large">
+              <div className="preview-image">🎧</div>
+              <div className="preview-body">
+                <p className="preview-title">AirPods Pro</p>
+                <p className="preview-price">$120</p>
+              </div>
+            </div>
+
+            <div className="floating-card medium">
+              <div className="preview-image">🪑</div>
+              <div className="preview-body">
+                <p className="preview-title">Lounge Chair</p>
+                <p className="preview-price">$60</p>
+              </div>
+            </div>
+
+            <div className="floating-card small">
+              <div className="preview-image">🚲</div>
+              <div className="preview-body">
+                <p className="preview-title">Fixie Bike</p>
+                <p className="preview-price">$200</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="category-row">
+          {categories.map((category) => (
+            <button
+              key={category}
+              className={activeCategory === category ? "category-pill active" : "category-pill"}
+              onClick={() => setActiveCategory(category)}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+
+        <main className="main-layout">
+          <section className="panel">
+            <h2>Create a Listing</h2>
+            <p className="section-subtitle">Post an item in seconds.</p>
+
+            <form onSubmit={handleSubmit} className="listing-form">
+              <input name="title" placeholder="Item title" value={formData.title} onChange={handleChange} required />
+              <input name="price" placeholder="Price, e.g. $500" value={formData.price} onChange={handleChange} required />
+              <input name="location" placeholder="Location, e.g. Hayward, CA" value={formData.location} onChange={handleChange} required />
+
+              <select name="category" value={formData.category} onChange={handleChange}>
+                <option>Electronics</option>
+                <option>Furniture</option>
+                <option>Vehicles</option>
+                <option>Clothing</option>
+                <option>Home Goods</option>
+                <option>Other</option>
+              </select>
+
+              <textarea
+                name="description"
+                placeholder="Describe condition, details, and anything buyers should know..."
+                value={formData.description}
+                onChange={handleChange}
+                required
+              />
+
+              <button type="submit" className="submit-button">Publish Listing</button>
+            </form>
+          </section>
+
+          <section>
+            <div className="section-header">
+              <div>
+                <h2>Trending now</h2>
+                <p className="section-subtitle">Fresh listings from your local community.</p>
+              </div>
+              <span className="listing-count">{filteredListings.length} listings</span>
+            </div>
+
+            {filteredListings.length === 0 ? (
+              <div className="empty-state">
+                <h3>No listings found</h3>
+                <p>Create a listing or try a different search/category.</p>
+              </div>
+            ) : (
+              <div className="listing-grid">
+                {filteredListings.map((item) => (
+                  <article className="card" key={item.id}>
+                    <div className="image-placeholder">{item.category}</div>
+                    <div className="card-content">
+                      <p className="card-category">{item.category}</p>
+                      <h3>{item.title}</h3>
+                      <p className="price">{item.price}</p>
+                      <p className="location">{item.location}</p>
+                      <p className="description">{item.description}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        </main>
+      </div>
+    </div>
   );
 }
 
