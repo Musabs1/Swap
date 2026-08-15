@@ -1,4 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
 import "./App.css";
 
 const API_URL = "http://localhost:5000";
@@ -13,7 +18,11 @@ const categories = [
   "Other",
 ];
 
-function Reveal({ children, className = "", delay = 0 }) {
+function Reveal({
+  children,
+  className = "",
+  delay = 0,
+}) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -21,29 +30,37 @@ function Reveal({ children, className = "", delay = 0 }) {
 
     if (!element) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          element.classList.add("reveal-visible");
-          observer.unobserve(element);
+    const observer =
+      new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            element.classList.add(
+              "reveal-visible"
+            );
+
+            observer.unobserve(element);
+          }
+        },
+        {
+          threshold: 0.12,
+          rootMargin:
+            "0px 0px -40px 0px",
         }
-      },
-      {
-        threshold: 0.12,
-        rootMargin: "0px 0px -40px 0px",
-      }
-    );
+      );
 
     observer.observe(element);
 
-    return () => observer.disconnect();
+    return () =>
+      observer.disconnect();
   }, []);
 
   return (
     <div
       ref={ref}
       className={`reveal ${className}`}
-      style={{ "--delay": `${delay}ms` }}
+      style={{
+        "--delay": `${delay}ms`,
+      }}
     >
       {children}
     </div>
@@ -52,7 +69,10 @@ function Reveal({ children, className = "", delay = 0 }) {
 
 function SearchIcon() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
       <circle
         cx="11"
         cy="11"
@@ -75,7 +95,10 @@ function SearchIcon() {
 
 function ArrowIcon() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
       <path
         d="M5 12h14M14 7l5 5-5 5"
         fill="none"
@@ -95,31 +118,77 @@ function formatPrice(value) {
     return value;
   }
 
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: Number.isInteger(numericValue) ? 0 : 2,
-    maximumFractionDigits: 2,
-  }).format(numericValue);
+  return new Intl.NumberFormat(
+    "en-US",
+    {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits:
+        Number.isInteger(numericValue)
+          ? 0
+          : 2,
+      maximumFractionDigits: 2,
+    }
+  ).format(numericValue);
 }
 
 function App() {
-  const [listings, setListings] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [showForm, setShowForm] = useState(false);
-  const [loadingListings, setLoadingListings] = useState(true);
-  const [publishing, setPublishing] = useState(false);
-  const [deletingId, setDeletingId] = useState(null);
-  const [message, setMessage] = useState("");
+  const [listings, setListings] =
+    useState([]);
+
+  const [
+    searchTerm,
+    setSearchTerm,
+  ] = useState("");
+
+  const [
+    activeCategory,
+    setActiveCategory,
+  ] = useState("All");
+
+  const [showForm, setShowForm] =
+    useState(false);
+
+  const [
+    loadingListings,
+    setLoadingListings,
+  ] = useState(true);
+
+  const [
+    publishing,
+    setPublishing,
+  ] = useState(false);
+
+  const [
+    deletingId,
+    setDeletingId,
+  ] = useState(null);
+
+  const [message, setMessage] =
+    useState("");
+
+  const [
+    selectedImage,
+    setSelectedImage,
+  ] = useState(null);
+
+  const [
+    imagePreview,
+    setImagePreview,
+  ] = useState("");
 
   const browseRef = useRef(null);
 
   const isLocalDevelopment =
-    window.location.hostname === "localhost" ||
-    window.location.hostname === "127.0.0.1";
+    window.location.hostname ===
+      "localhost" ||
+    window.location.hostname ===
+      "127.0.0.1";
 
-  const [formData, setFormData] = useState({
+  const [
+    formData,
+    setFormData,
+  ] = useState({
     title: "",
     price: "",
     location: "",
@@ -130,15 +199,24 @@ function App() {
   useEffect(() => {
     async function fetchListings() {
       try {
-        const response = await fetch(`${API_URL}/api/listings`);
+        const response = await fetch(
+          `${API_URL}/api/listings`
+        );
 
         if (!response.ok) {
-          throw new Error("Backend unavailable");
+          throw new Error(
+            "Backend unavailable"
+          );
         }
 
-        const data = await response.json();
+        const data =
+          await response.json();
 
-        setListings(Array.isArray(data) ? data : []);
+        setListings(
+          Array.isArray(data)
+            ? data
+            : []
+        );
       } catch (error) {
         console.error(error);
 
@@ -153,6 +231,16 @@ function App() {
     fetchListings();
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(
+          imagePreview
+        );
+      }
+    };
+  }, [imagePreview]);
+
   function scrollToBrowse() {
     browseRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -161,7 +249,10 @@ function App() {
   }
 
   function handleChange(event) {
-    const { name, value } = event.target;
+    const {
+      name,
+      value,
+    } = event.target;
 
     setFormData((current) => ({
       ...current,
@@ -169,7 +260,80 @@ function App() {
     }));
   }
 
-  async function handleSubmit(event) {
+  function clearSelectedImage() {
+    if (imagePreview) {
+      URL.revokeObjectURL(
+        imagePreview
+      );
+    }
+
+    setSelectedImage(null);
+    setImagePreview("");
+  }
+
+  function handleImageChange(event) {
+    const file =
+      event.target.files?.[0];
+
+    if (!file) {
+      clearSelectedImage();
+      return;
+    }
+
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+    ];
+
+    if (
+      !allowedTypes.includes(
+        file.type
+      )
+    ) {
+      setMessage(
+        "Please choose a JPG, PNG, or WEBP image."
+      );
+
+      event.target.value = "";
+      return;
+    }
+
+    if (
+      file.size >
+      5 * 1024 * 1024
+    ) {
+      setMessage(
+        "The image must be 5 MB or smaller."
+      );
+
+      event.target.value = "";
+      return;
+    }
+
+    if (imagePreview) {
+      URL.revokeObjectURL(
+        imagePreview
+      );
+    }
+
+    setSelectedImage(file);
+
+    setImagePreview(
+      URL.createObjectURL(file)
+    );
+
+    setMessage("");
+  }
+
+  function closeListingForm() {
+    setShowForm(false);
+    clearSelectedImage();
+  }
+
+  async function handleSubmit(
+    event
+  ) {
     event.preventDefault();
 
     if (publishing) return;
@@ -178,25 +342,63 @@ function App() {
       setPublishing(true);
       setMessage("");
 
-      const response = await fetch(`${API_URL}/api/listings`, {
-        method: "POST",
+      const payload =
+        new FormData();
 
-        headers: {
-          "Content-Type": "application/json",
-        },
+      payload.append(
+        "title",
+        formData.title
+      );
 
-        body: JSON.stringify(formData),
-      });
+      payload.append(
+        "price",
+        formData.price
+      );
 
-      const data = await response.json();
+      payload.append(
+        "location",
+        formData.location
+      );
 
-      if (!response.ok) {
-        throw new Error(
-          data.error || "Could not publish listing."
+      payload.append(
+        "category",
+        formData.category
+      );
+
+      payload.append(
+        "description",
+        formData.description
+      );
+
+      if (selectedImage) {
+        payload.append(
+          "image",
+          selectedImage
         );
       }
 
-      setListings((current) => [data, ...current]);
+      const response = await fetch(
+        `${API_URL}/api/listings`,
+        {
+          method: "POST",
+          body: payload,
+        }
+      );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+            "Could not publish listing."
+        );
+      }
+
+      setListings((current) => [
+        data,
+        ...current,
+      ]);
 
       setFormData({
         title: "",
@@ -206,6 +408,7 @@ function App() {
         description: "",
       });
 
+      clearSelectedImage();
       setShowForm(false);
     } catch (error) {
       console.error(error);
@@ -219,14 +422,20 @@ function App() {
     }
   }
 
-  async function handleDeleteListing(id) {
-    if (!isLocalDevelopment || deletingId !== null) {
+  async function handleDeleteListing(
+    id
+  ) {
+    if (
+      !isLocalDevelopment ||
+      deletingId !== null
+    ) {
       return;
     }
 
-    const confirmed = window.confirm(
-      "Delete this listing from Supabase?"
-    );
+    const confirmed =
+      window.confirm(
+        "Delete this listing from Supabase?"
+      );
 
     if (!confirmed) return;
 
@@ -241,44 +450,60 @@ function App() {
         }
       );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data.error || "Could not delete listing."
+          data.error ||
+            "Could not delete listing."
         );
       }
 
       setListings((current) =>
-        current.filter((listing) => listing.id !== id)
+        current.filter(
+          (listing) =>
+            listing.id !== id
+        )
       );
     } catch (error) {
       console.error(error);
 
       setMessage(
-        error.message || "Could not delete listing."
+        error.message ||
+          "Could not delete listing."
       );
     } finally {
       setDeletingId(null);
     }
   }
 
-  const filteredListings = listings.filter((item) => {
-    const searchableText =
-      `${item.title || ""} ${item.category || ""} ${
-        item.location || ""
-      } ${item.description || ""}`.toLowerCase();
+  const filteredListings =
+    listings.filter((item) => {
+      const searchableText =
+        `${item.title || ""} ${
+          item.category || ""
+        } ${item.location || ""} ${
+          item.description || ""
+        }`.toLowerCase();
 
-    const matchesSearch = searchableText.includes(
-      searchTerm.trim().toLowerCase()
-    );
+      const matchesSearch =
+        searchableText.includes(
+          searchTerm
+            .trim()
+            .toLowerCase()
+        );
 
-    const matchesCategory =
-      activeCategory === "All" ||
-      item.category === activeCategory;
+      const matchesCategory =
+        activeCategory === "All" ||
+        item.category ===
+          activeCategory;
 
-    return matchesSearch && matchesCategory;
-  });
+      return (
+        matchesSearch &&
+        matchesCategory
+      );
+    });
 
   return (
     <div className="app">
@@ -286,9 +511,17 @@ function App() {
 
       <header className="site-header">
         <div className="container nav-inner">
-          <button className="brand" type="button">
-            <span className="brand-mark">S</span>
-            <span className="brand-name">Swap</span>
+          <button
+            className="brand"
+            type="button"
+          >
+            <span className="brand-mark">
+              S
+            </span>
+
+            <span className="brand-name">
+              Swap
+            </span>
           </button>
 
           <nav className="nav-links">
@@ -303,9 +536,12 @@ function App() {
               type="button"
               onClick={() =>
                 document
-                  .querySelector("#categories")
+                  .querySelector(
+                    "#categories"
+                  )
                   ?.scrollIntoView({
-                    behavior: "smooth",
+                    behavior:
+                      "smooth",
                   })
               }
             >
@@ -316,9 +552,12 @@ function App() {
               type="button"
               onClick={() =>
                 document
-                  .querySelector("#about")
+                  .querySelector(
+                    "#about"
+                  )
                   ?.scrollIntoView({
-                    behavior: "smooth",
+                    behavior:
+                      "smooth",
                   })
               }
             >
@@ -337,7 +576,9 @@ function App() {
             <button
               className="nav-sell-button"
               type="button"
-              onClick={() => setShowForm(true)}
+              onClick={() =>
+                setShowForm(true)
+              }
             >
               Sell an item
             </button>
@@ -351,7 +592,8 @@ function App() {
             <div className="hero-copy">
               <div className="hero-status hero-enter hero-enter-1">
                 <span className="live-dot" />
-                Local marketplace · Buy · Sell · Reuse
+                Local marketplace · Buy ·
+                Sell · Reuse
               </div>
 
               <h1 className="hero-enter hero-enter-2">
@@ -361,20 +603,25 @@ function App() {
               </h1>
 
               <p className="hero-subtitle hero-enter hero-enter-3">
-                A cleaner way to buy and sell locally.
+                A cleaner way to buy and
+                sell locally.
               </p>
 
               <p className="hero-description hero-enter hero-enter-4">
-                Find useful things nearby, give your old
-                items another life, and connect directly
-                with people in your community.
+                Find useful things nearby,
+                give your old items another
+                life, and connect directly
+                with people in your
+                community.
               </p>
 
               <div className="hero-buttons hero-enter hero-enter-5">
                 <button
                   type="button"
                   className="primary-action"
-                  onClick={scrollToBrowse}
+                  onClick={
+                    scrollToBrowse
+                  }
                 >
                   Browse listings
                 </button>
@@ -382,7 +629,9 @@ function App() {
                 <button
                   type="button"
                   className="secondary-action"
-                  onClick={() => setShowForm(true)}
+                  onClick={() =>
+                    setShowForm(true)
+                  }
                 >
                   Sell something
                   <ArrowIcon />
@@ -390,17 +639,33 @@ function App() {
               </div>
 
               <div className="hero-small-links hero-enter hero-enter-6">
-                <span>No listing fees</span>
-                <span className="separator">·</span>
-                <span>Local discovery</span>
-                <span className="separator">·</span>
-                <span>Simple posting</span>
+                <span>
+                  No listing fees
+                </span>
+
+                <span className="separator">
+                  ·
+                </span>
+
+                <span>
+                  Local discovery
+                </span>
+
+                <span className="separator">
+                  ·
+                </span>
+
+                <span>
+                  Simple posting
+                </span>
               </div>
             </div>
 
             <div className="market-monitor hero-enter hero-enter-4">
               <div className="monitor-topbar">
-                <span>Marketplace Activity</span>
+                <span>
+                  Marketplace Activity
+                </span>
 
                 <div className="monitor-live">
                   <span className="live-dot" />
@@ -476,11 +741,16 @@ function App() {
                 <span className="live-dot" />
 
                 <span>
-                  {listings.length} active listing
-                  {listings.length === 1 ? "" : "s"}
+                  {listings.length} active
+                  listing
+                  {listings.length === 1
+                    ? ""
+                    : "s"}
                 </span>
 
-                <span className="monitor-divider">·</span>
+                <span className="monitor-divider">
+                  ·
+                </span>
 
                 <span>Swap Local</span>
               </div>
@@ -499,12 +769,15 @@ function App() {
               <div className="section-title-row">
                 <div>
                   <h2>
-                    Built around simple exchanges.
+                    Built around simple
+                    exchanges.
                   </h2>
 
                   <p>
-                    Less clutter. Less friction. Just
-                    useful things and local people.
+                    Less clutter. Less
+                    friction. Just useful
+                    things and local
+                    people.
                   </p>
                 </div>
 
@@ -522,10 +795,13 @@ function App() {
                     Active Listings
                   </span>
 
-                  <strong>{listings.length}</strong>
+                  <strong>
+                    {listings.length}
+                  </strong>
 
                   <span className="metric-detail">
-                    Items currently available
+                    Items currently
+                    available
                   </span>
                 </div>
               </Reveal>
@@ -539,7 +815,8 @@ function App() {
                   <strong>Fast</strong>
 
                   <span className="metric-detail">
-                    Create a listing in seconds
+                    Create a listing in
+                    seconds
                   </span>
                 </div>
               </Reveal>
@@ -553,7 +830,8 @@ function App() {
                   <strong>Local</strong>
 
                   <span className="metric-detail">
-                    Search by item and category
+                    Search by item and
+                    category
                   </span>
                 </div>
               </Reveal>
@@ -567,7 +845,8 @@ function App() {
                   <strong>$0</strong>
 
                   <span className="metric-detail">
-                    Simple community marketplace
+                    Simple community
+                    marketplace
                   </span>
                 </div>
               </Reveal>
@@ -590,8 +869,8 @@ function App() {
                   <h2>Categories</h2>
 
                   <p>
-                    Start broad, then find exactly what
-                    you need.
+                    Start broad, then find
+                    exactly what you need.
                   </p>
                 </div>
               </div>
@@ -599,26 +878,35 @@ function App() {
 
             <Reveal delay={70}>
               <div className="category-list">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    type="button"
-                    className={
-                      activeCategory === category
-                        ? "category-button active"
-                        : "category-button"
-                    }
-                    onClick={() => {
-                      setActiveCategory(category);
-                      scrollToBrowse();
-                    }}
-                  >
-                    <span>{category}</span>
-                    <span className="category-arrow">
-                      ↗
-                    </span>
-                  </button>
-                ))}
+                {categories.map(
+                  (category) => (
+                    <button
+                      key={category}
+                      type="button"
+                      className={
+                        activeCategory ===
+                        category
+                          ? "category-button active"
+                          : "category-button"
+                      }
+                      onClick={() => {
+                        setActiveCategory(
+                          category
+                        );
+
+                        scrollToBrowse();
+                      }}
+                    >
+                      <span>
+                        {category}
+                      </span>
+
+                      <span className="category-arrow">
+                        ↗
+                      </span>
+                    </button>
+                  )
+                )}
               </div>
             </Reveal>
           </div>
@@ -637,11 +925,14 @@ function App() {
 
               <div className="marketplace-heading">
                 <div>
-                  <h2>Fresh listings</h2>
+                  <h2>
+                    Fresh listings
+                  </h2>
 
                   <p>
-                    Things recently posted by people in
-                    the community.
+                    Things recently posted
+                    by people in the
+                    community.
                   </p>
                 </div>
 
@@ -662,7 +953,9 @@ function App() {
                   placeholder="Search the marketplace..."
                   value={searchTerm}
                   onChange={(event) =>
-                    setSearchTerm(event.target.value)
+                    setSearchTerm(
+                      event.target.value
+                    )
                   }
                 />
 
@@ -670,7 +963,9 @@ function App() {
                   <button
                     type="button"
                     className="clear-search"
-                    onClick={() => setSearchTerm("")}
+                    onClick={() =>
+                      setSearchTerm("")
+                    }
                   >
                     Clear
                   </button>
@@ -694,27 +989,35 @@ function App() {
                     SYNCING MARKETPLACE
                   </span>
 
-                  <h3>Loading listings...</h3>
+                  <h3>
+                    Loading listings...
+                  </h3>
                 </div>
               </Reveal>
-            ) : filteredListings.length === 0 ? (
+            ) : filteredListings.length ===
+              0 ? (
               <Reveal delay={100}>
                 <div className="empty-market">
                   <span className="eyebrow">
                     NO RESULTS
                   </span>
 
-                  <h3>Nothing here yet.</h3>
+                  <h3>
+                    Nothing here yet.
+                  </h3>
 
                   <p>
-                    Try a different search or post the
-                    first listing.
+                    Try a different search
+                    or post the first
+                    listing.
                   </p>
 
                   <button
                     type="button"
                     className="primary-action"
-                    onClick={() => setShowForm(true)}
+                    onClick={() =>
+                      setShowForm(true)
+                    }
                   >
                     Create listing
                   </button>
@@ -729,18 +1032,40 @@ function App() {
                         item.id ||
                         `${item.title}-${index}`
                       }
-                      delay={(index % 4) * 55}
+                      delay={
+                        (index % 4) * 55
+                      }
                     >
                       <article className="listing-card">
-                        <div className="listing-image">
-                          <div className="listing-image-grid" />
+                        <div
+                          className={`listing-image ${
+                            item.image_url
+                              ? "has-listing-photo"
+                              : ""
+                          }`}
+                        >
+                          {item.image_url ? (
+                            <img
+                              src={
+                                item.image_url
+                              }
+                              alt={
+                                item.title
+                              }
+                              className="listing-photo"
+                            />
+                          ) : (
+                            <div className="listing-image-grid" />
+                          )}
 
                           <span className="listing-category-label">
                             {item.category}
                           </span>
 
                           <span className="listing-index">
-                            {String(index + 1).padStart(
+                            {String(
+                              index + 1
+                            ).padStart(
                               2,
                               "0"
                             )}
@@ -749,10 +1074,14 @@ function App() {
 
                         <div className="listing-content">
                           <div className="listing-main-info">
-                            <h3>{item.title}</h3>
+                            <h3>
+                              {item.title}
+                            </h3>
 
                             <strong>
-                              {formatPrice(item.price)}
+                              {formatPrice(
+                                item.price
+                              )}
                             </strong>
                           </div>
 
@@ -762,12 +1091,16 @@ function App() {
 
                           {item.description && (
                             <p>
-                              {item.description}
+                              {
+                                item.description
+                              }
                             </p>
                           )}
 
                           <div className="listing-bottom">
-                            <span>View listing</span>
+                            <span>
+                              View listing
+                            </span>
 
                             <div className="listing-bottom-actions">
                               {isLocalDevelopment && (
@@ -775,7 +1108,8 @@ function App() {
                                   type="button"
                                   className="dev-delete-button"
                                   disabled={
-                                    deletingId === item.id
+                                    deletingId ===
+                                    item.id
                                   }
                                   onClick={() =>
                                     handleDeleteListing(
@@ -783,7 +1117,8 @@ function App() {
                                     )
                                   }
                                 >
-                                  {deletingId === item.id
+                                  {deletingId ===
+                                  item.id
                                     ? "Deleting..."
                                     : "Delete"}
                                 </button>
@@ -814,23 +1149,28 @@ function App() {
 
               <div className="about-layout">
                 <h2>
-                  A marketplace designed to feel simple
-                  from the first click.
+                  A marketplace designed
+                  to feel simple from the
+                  first click.
                 </h2>
 
                 <div className="about-copy">
                   <p>
-                    Swap is built around a straightforward
-                    idea: useful items should be easy to
-                    discover, easy to list, and easy to
+                    Swap is built around a
+                    straightforward idea:
+                    useful items should be
+                    easy to discover, easy
+                    to list, and easy to
                     keep in circulation.
                   </p>
 
                   <p>
-                    Search locally, browse by category,
-                    and post something you no longer need
-                    without fighting through a cluttered
-                    interface.
+                    Search locally, browse
+                    by category, and post
+                    something you no
+                    longer need without
+                    fighting through a
+                    cluttered interface.
                   </p>
                 </div>
               </div>
@@ -842,7 +1182,10 @@ function App() {
       <footer className="footer">
         <div className="container footer-inner">
           <div className="footer-brand">
-            <span className="brand-mark">S</span>
+            <span className="brand-mark">
+              S
+            </span>
+
             <span>Swap</span>
           </div>
 
@@ -857,9 +1200,10 @@ function App() {
           className="modal-backdrop"
           onMouseDown={(event) => {
             if (
-              event.target === event.currentTarget
+              event.target ===
+              event.currentTarget
             ) {
-              setShowForm(false);
+              closeListingForm();
             }
           }}
         >
@@ -870,13 +1214,17 @@ function App() {
                   New Listing
                 </span>
 
-                <h2>Sell something.</h2>
+                <h2>
+                  Sell something.
+                </h2>
               </div>
 
               <button
                 type="button"
                 className="modal-close"
-                onClick={() => setShowForm(false)}
+                onClick={
+                  closeListingForm
+                }
               >
                 ×
               </button>
@@ -886,15 +1234,68 @@ function App() {
               onSubmit={handleSubmit}
               className="listing-form"
             >
+              <label className="listing-photo-field">
+                <span>
+                  Listing photo
+                </span>
+
+                <div
+                  className={`listing-photo-picker ${
+                    imagePreview
+                      ? "has-preview"
+                      : ""
+                  }`}
+                >
+                  {imagePreview ? (
+                    <>
+                      <img
+                        src={imagePreview}
+                        alt="Listing preview"
+                        className="listing-photo-preview"
+                      />
+
+                      <div className="listing-photo-overlay">
+                        Change photo
+                      </div>
+                    </>
+                  ) : (
+                    <div className="listing-photo-placeholder">
+                      <strong>
+                        Add a photo
+                      </strong>
+
+                      <span>
+                        JPG, PNG or WEBP ·
+                        Max 5 MB
+                      </span>
+                    </div>
+                  )}
+
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={
+                      handleImageChange
+                    }
+                  />
+                </div>
+              </label>
+
               <div className="form-two-column">
                 <label>
-                  <span>Item title</span>
+                  <span>
+                    Item title
+                  </span>
 
                   <input
                     name="title"
                     placeholder="iPhone 15 Pro"
-                    value={formData.title}
-                    onChange={handleChange}
+                    value={
+                      formData.title
+                    }
+                    onChange={
+                      handleChange
+                    }
                     required
                   />
                 </label>
@@ -908,8 +1309,12 @@ function App() {
                     min="0"
                     step="0.01"
                     placeholder="500"
-                    value={formData.price}
-                    onChange={handleChange}
+                    value={
+                      formData.price
+                    }
+                    onChange={
+                      handleChange
+                    }
                     required
                   />
                 </label>
@@ -917,47 +1322,74 @@ function App() {
 
               <div className="form-two-column">
                 <label>
-                  <span>Location</span>
+                  <span>
+                    Location
+                  </span>
 
                   <input
                     name="location"
                     placeholder="Hayward, CA"
-                    value={formData.location}
-                    onChange={handleChange}
+                    value={
+                      formData.location
+                    }
+                    onChange={
+                      handleChange
+                    }
                     required
                   />
                 </label>
 
                 <label>
-                  <span>Category</span>
+                  <span>
+                    Category
+                  </span>
 
                   <select
                     name="category"
-                    value={formData.category}
-                    onChange={handleChange}
+                    value={
+                      formData.category
+                    }
+                    onChange={
+                      handleChange
+                    }
                   >
                     {categories
                       .filter(
                         (category) =>
-                          category !== "All"
+                          category !==
+                          "All"
                       )
-                      .map((category) => (
-                        <option key={category}>
-                          {category}
-                        </option>
-                      ))}
+                      .map(
+                        (category) => (
+                          <option
+                            key={
+                              category
+                            }
+                          >
+                            {
+                              category
+                            }
+                          </option>
+                        )
+                      )}
                   </select>
                 </label>
               </div>
 
               <label>
-                <span>Description</span>
+                <span>
+                  Description
+                </span>
 
                 <textarea
                   name="description"
                   placeholder="Condition, details, and anything buyers should know..."
-                  value={formData.description}
-                  onChange={handleChange}
+                  value={
+                    formData.description
+                  }
+                  onChange={
+                    handleChange
+                  }
                   required
                 />
               </label>
@@ -966,8 +1398,8 @@ function App() {
                 <button
                   type="button"
                   className="cancel-button"
-                  onClick={() =>
-                    setShowForm(false)
+                  onClick={
+                    closeListingForm
                   }
                 >
                   Cancel
@@ -976,7 +1408,9 @@ function App() {
                 <button
                   type="submit"
                   className="publish-button"
-                  disabled={publishing}
+                  disabled={
+                    publishing
+                  }
                 >
                   {publishing
                     ? "Publishing..."

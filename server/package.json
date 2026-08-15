@@ -1,20 +1,26 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "",
+  "description": "Express API for the Swap marketplace",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "marketplace",
+    "express",
+    "supabase",
+    "postgresql",
+    "rest-api"
+  ],
+  "author": "Musab",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "multer": "^2.2.0"
   }
 }
