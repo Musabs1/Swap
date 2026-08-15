@@ -61,6 +61,7 @@ function SearchIcon() {
         stroke="currentColor"
         strokeWidth="1.8"
       />
+
       <path
         d="m16.5 16.5 4 4"
         fill="none"
@@ -87,6 +88,21 @@ function ArrowIcon() {
   );
 }
 
+function formatPrice(value) {
+  const numericValue = Number(value);
+
+  if (!Number.isFinite(numericValue)) {
+    return value;
+  }
+
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: Number.isInteger(numericValue) ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(numericValue);
+}
+
 function App() {
   const [listings, setListings] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -94,9 +110,14 @@ function App() {
   const [showForm, setShowForm] = useState(false);
   const [loadingListings, setLoadingListings] = useState(true);
   const [publishing, setPublishing] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const [message, setMessage] = useState("");
 
   const browseRef = useRef(null);
+
+  const isLocalDevelopment =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1";
 
   const [formData, setFormData] = useState({
     title: "",
@@ -116,9 +137,11 @@ function App() {
         }
 
         const data = await response.json();
+
         setListings(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error(error);
+
         setMessage(
           "Marketplace data is temporarily unavailable while the backend is offline."
         );
@@ -157,19 +180,23 @@ function App() {
 
       const response = await fetch(`${API_URL}/api/listings`, {
         method: "POST",
+
         headers: {
           "Content-Type": "application/json",
         },
+
         body: JSON.stringify(formData),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error("Could not publish listing.");
+        throw new Error(
+          data.error || "Could not publish listing."
+        );
       }
 
-      const newListing = await response.json();
-
-      setListings((current) => [newListing, ...current]);
+      setListings((current) => [data, ...current]);
 
       setFormData({
         title: "",
@@ -182,26 +209,73 @@ function App() {
       setShowForm(false);
     } catch (error) {
       console.error(error);
+
       setMessage(
-        "The listing could not be published because the backend is currently unavailable."
+        error.message ||
+          "The listing could not be published."
       );
     } finally {
       setPublishing(false);
     }
   }
 
+  async function handleDeleteListing(id) {
+    if (!isLocalDevelopment || deletingId !== null) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Delete this listing from Supabase?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setDeletingId(id);
+      setMessage("");
+
+      const response = await fetch(
+        `${API_URL}/api/listings/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Could not delete listing."
+        );
+      }
+
+      setListings((current) =>
+        current.filter((listing) => listing.id !== id)
+      );
+    } catch (error) {
+      console.error(error);
+
+      setMessage(
+        error.message || "Could not delete listing."
+      );
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   const filteredListings = listings.filter((item) => {
     const searchableText =
-      `${item.title || ""} ${item.category || ""} ${item.location || ""} ${
-        item.description || ""
-      }`.toLowerCase();
+      `${item.title || ""} ${item.category || ""} ${
+        item.location || ""
+      } ${item.description || ""}`.toLowerCase();
 
     const matchesSearch = searchableText.includes(
       searchTerm.trim().toLowerCase()
     );
 
     const matchesCategory =
-      activeCategory === "All" || item.category === activeCategory;
+      activeCategory === "All" ||
+      item.category === activeCategory;
 
     return matchesSearch && matchesCategory;
   });
@@ -218,7 +292,10 @@ function App() {
           </button>
 
           <nav className="nav-links">
-            <button type="button" onClick={scrollToBrowse}>
+            <button
+              type="button"
+              onClick={scrollToBrowse}
+            >
               Marketplace
             </button>
 
@@ -227,7 +304,9 @@ function App() {
               onClick={() =>
                 document
                   .querySelector("#categories")
-                  ?.scrollIntoView({ behavior: "smooth" })
+                  ?.scrollIntoView({
+                    behavior: "smooth",
+                  })
               }
             >
               Categories
@@ -238,7 +317,9 @@ function App() {
               onClick={() =>
                 document
                   .querySelector("#about")
-                  ?.scrollIntoView({ behavior: "smooth" })
+                  ?.scrollIntoView({
+                    behavior: "smooth",
+                  })
               }
             >
               About
@@ -246,7 +327,10 @@ function App() {
           </nav>
 
           <div className="nav-actions">
-            <button className="sign-in-button" type="button">
+            <button
+              className="sign-in-button"
+              type="button"
+            >
               Sign in
             </button>
 
@@ -281,8 +365,9 @@ function App() {
               </p>
 
               <p className="hero-description hero-enter hero-enter-4">
-                Find useful things nearby, give your old items another life,
-                and connect directly with people in your community.
+                Find useful things nearby, give your old
+                items another life, and connect directly
+                with people in your community.
               </p>
 
               <div className="hero-buttons hero-enter hero-enter-5">
@@ -340,9 +425,20 @@ function App() {
                       x2="1"
                       y2="0"
                     >
-                      <stop offset="0%" stopColor="#0095ff" />
-                      <stop offset="55%" stopColor="#2fbaff" />
-                      <stop offset="100%" stopColor="#46d6ff" />
+                      <stop
+                        offset="0%"
+                        stopColor="#0095ff"
+                      />
+
+                      <stop
+                        offset="55%"
+                        stopColor="#2fbaff"
+                      />
+
+                      <stop
+                        offset="100%"
+                        stopColor="#46d6ff"
+                      />
                     </linearGradient>
                   </defs>
 
@@ -378,6 +474,7 @@ function App() {
 
               <div className="monitor-footer">
                 <span className="live-dot" />
+
                 <span>
                   {listings.length} active listing
                   {listings.length === 1 ? "" : "s"}
@@ -401,10 +498,13 @@ function App() {
 
               <div className="section-title-row">
                 <div>
-                  <h2>Built around simple exchanges.</h2>
+                  <h2>
+                    Built around simple exchanges.
+                  </h2>
+
                   <p>
-                    Less clutter. Less friction. Just useful things and local
-                    people.
+                    Less clutter. Less friction. Just
+                    useful things and local people.
                   </p>
                 </div>
 
@@ -418,7 +518,9 @@ function App() {
             <div className="metrics-grid">
               <Reveal delay={0}>
                 <div className="metric-card">
-                  <span className="metric-name">Active Listings</span>
+                  <span className="metric-name">
+                    Active Listings
+                  </span>
 
                   <strong>{listings.length}</strong>
 
@@ -430,7 +532,9 @@ function App() {
 
               <Reveal delay={55}>
                 <div className="metric-card">
-                  <span className="metric-name">Posting</span>
+                  <span className="metric-name">
+                    Posting
+                  </span>
 
                   <strong>Fast</strong>
 
@@ -442,7 +546,9 @@ function App() {
 
               <Reveal delay={110}>
                 <div className="metric-card">
-                  <span className="metric-name">Discovery</span>
+                  <span className="metric-name">
+                    Discovery
+                  </span>
 
                   <strong>Local</strong>
 
@@ -454,7 +560,9 @@ function App() {
 
               <Reveal delay={165}>
                 <div className="metric-card">
-                  <span className="metric-name">Listing Fee</span>
+                  <span className="metric-name">
+                    Listing Fee
+                  </span>
 
                   <strong>$0</strong>
 
@@ -467,15 +575,24 @@ function App() {
           </div>
         </section>
 
-        <section id="categories" className="categories-section">
+        <section
+          id="categories"
+          className="categories-section"
+        >
           <div className="container">
             <Reveal>
-              <div className="section-label">Browse</div>
+              <div className="section-label">
+                Browse
+              </div>
 
               <div className="section-title-row">
                 <div>
                   <h2>Categories</h2>
-                  <p>Start broad, then find exactly what you need.</p>
+
+                  <p>
+                    Start broad, then find exactly what
+                    you need.
+                  </p>
                 </div>
               </div>
             </Reveal>
@@ -497,7 +614,9 @@ function App() {
                     }}
                   >
                     <span>{category}</span>
-                    <span className="category-arrow">↗</span>
+                    <span className="category-arrow">
+                      ↗
+                    </span>
                   </button>
                 ))}
               </div>
@@ -512,19 +631,24 @@ function App() {
         >
           <div className="container">
             <Reveal>
-              <div className="section-label">Marketplace</div>
+              <div className="section-label">
+                Marketplace
+              </div>
 
               <div className="marketplace-heading">
                 <div>
                   <h2>Fresh listings</h2>
 
                   <p>
-                    Things recently posted by people in the community.
+                    Things recently posted by people in
+                    the community.
                   </p>
                 </div>
 
                 <div className="listing-number">
-                  {String(filteredListings.length).padStart(2, "0")}
+                  {String(
+                    filteredListings.length
+                  ).padStart(2, "0")}
                 </div>
               </div>
             </Reveal>
@@ -537,7 +661,9 @@ function App() {
                   type="text"
                   placeholder="Search the marketplace..."
                   value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
+                  onChange={(event) =>
+                    setSearchTerm(event.target.value)
+                  }
                 />
 
                 {searchTerm && (
@@ -564,19 +690,25 @@ function App() {
             {loadingListings ? (
               <Reveal delay={100}>
                 <div className="empty-market">
-                  <span className="eyebrow">SYNCING MARKETPLACE</span>
+                  <span className="eyebrow">
+                    SYNCING MARKETPLACE
+                  </span>
+
                   <h3>Loading listings...</h3>
                 </div>
               </Reveal>
             ) : filteredListings.length === 0 ? (
               <Reveal delay={100}>
                 <div className="empty-market">
-                  <span className="eyebrow">NO RESULTS</span>
+                  <span className="eyebrow">
+                    NO RESULTS
+                  </span>
 
                   <h3>Nothing here yet.</h3>
 
                   <p>
-                    Try a different search or post the first listing.
+                    Try a different search or post the
+                    first listing.
                   </p>
 
                   <button
@@ -590,71 +722,114 @@ function App() {
               </Reveal>
             ) : (
               <div className="listing-grid">
-                {filteredListings.map((item, index) => (
-                  <Reveal
-                    key={item.id || `${item.title}-${index}`}
-                    delay={(index % 4) * 55}
-                  >
-                    <article className="listing-card">
-                      <div className="listing-image">
-                        <div className="listing-image-grid" />
+                {filteredListings.map(
+                  (item, index) => (
+                    <Reveal
+                      key={
+                        item.id ||
+                        `${item.title}-${index}`
+                      }
+                      delay={(index % 4) * 55}
+                    >
+                      <article className="listing-card">
+                        <div className="listing-image">
+                          <div className="listing-image-grid" />
 
-                        <span className="listing-category-label">
-                          {item.category}
-                        </span>
+                          <span className="listing-category-label">
+                            {item.category}
+                          </span>
 
-                        <span className="listing-index">
-                          {String(index + 1).padStart(2, "0")}
-                        </span>
-                      </div>
-
-                      <div className="listing-content">
-                        <div className="listing-main-info">
-                          <h3>{item.title}</h3>
-                          <strong>{item.price}</strong>
+                          <span className="listing-index">
+                            {String(index + 1).padStart(
+                              2,
+                              "0"
+                            )}
+                          </span>
                         </div>
 
-                        <div className="listing-location">
-                          {item.location}
-                        </div>
+                        <div className="listing-content">
+                          <div className="listing-main-info">
+                            <h3>{item.title}</h3>
 
-                        {item.description && (
-                          <p>{item.description}</p>
-                        )}
+                            <strong>
+                              {formatPrice(item.price)}
+                            </strong>
+                          </div>
 
-                        <div className="listing-bottom">
-                          <span>View listing</span>
-                          <ArrowIcon />
+                          <div className="listing-location">
+                            {item.location}
+                          </div>
+
+                          {item.description && (
+                            <p>
+                              {item.description}
+                            </p>
+                          )}
+
+                          <div className="listing-bottom">
+                            <span>View listing</span>
+
+                            <div className="listing-bottom-actions">
+                              {isLocalDevelopment && (
+                                <button
+                                  type="button"
+                                  className="dev-delete-button"
+                                  disabled={
+                                    deletingId === item.id
+                                  }
+                                  onClick={() =>
+                                    handleDeleteListing(
+                                      item.id
+                                    )
+                                  }
+                                >
+                                  {deletingId === item.id
+                                    ? "Deleting..."
+                                    : "Delete"}
+                                </button>
+                              )}
+
+                              <ArrowIcon />
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </article>
-                  </Reveal>
-                ))}
+                      </article>
+                    </Reveal>
+                  )
+                )}
               </div>
             )}
           </div>
         </section>
 
-        <section id="about" className="about-section">
+        <section
+          id="about"
+          className="about-section"
+        >
           <div className="container">
             <Reveal>
-              <div className="section-label">About Swap</div>
+              <div className="section-label">
+                About Swap
+              </div>
 
               <div className="about-layout">
                 <h2>
-                  A marketplace designed to feel simple from the first click.
+                  A marketplace designed to feel simple
+                  from the first click.
                 </h2>
 
                 <div className="about-copy">
                   <p>
-                    Swap is built around a straightforward idea: useful items
-                    should be easy to discover, easy to list, and easy to keep
-                    in circulation.
+                    Swap is built around a straightforward
+                    idea: useful items should be easy to
+                    discover, easy to list, and easy to
+                    keep in circulation.
                   </p>
 
                   <p>
-                    Search locally, browse by category, and post something you
-                    no longer need without fighting through a cluttered
+                    Search locally, browse by category,
+                    and post something you no longer need
+                    without fighting through a cluttered
                     interface.
                   </p>
                 </div>
@@ -671,7 +846,9 @@ function App() {
             <span>Swap</span>
           </div>
 
-          <span>Buy better · Sell simpler</span>
+          <span>
+            Buy better · Sell simpler
+          </span>
         </div>
       </footer>
 
@@ -679,7 +856,9 @@ function App() {
         <div
           className="modal-backdrop"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
+            if (
+              event.target === event.currentTarget
+            ) {
               setShowForm(false);
             }
           }}
@@ -687,7 +866,10 @@ function App() {
           <div className="listing-modal">
             <div className="modal-header">
               <div>
-                <span className="section-label">New Listing</span>
+                <span className="section-label">
+                  New Listing
+                </span>
+
                 <h2>Sell something.</h2>
               </div>
 
@@ -700,7 +882,10 @@ function App() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="listing-form">
+            <form
+              onSubmit={handleSubmit}
+              className="listing-form"
+            >
               <div className="form-two-column">
                 <label>
                   <span>Item title</span>
@@ -719,7 +904,10 @@ function App() {
 
                   <input
                     name="price"
-                    placeholder="$500"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="500"
                     value={formData.price}
                     onChange={handleChange}
                     required
@@ -749,9 +937,14 @@ function App() {
                     onChange={handleChange}
                   >
                     {categories
-                      .filter((category) => category !== "All")
+                      .filter(
+                        (category) =>
+                          category !== "All"
+                      )
                       .map((category) => (
-                        <option key={category}>{category}</option>
+                        <option key={category}>
+                          {category}
+                        </option>
                       ))}
                   </select>
                 </label>
@@ -773,7 +966,9 @@ function App() {
                 <button
                   type="button"
                   className="cancel-button"
-                  onClick={() => setShowForm(false)}
+                  onClick={() =>
+                    setShowForm(false)
+                  }
                 >
                   Cancel
                 </button>
@@ -783,7 +978,9 @@ function App() {
                   className="publish-button"
                   disabled={publishing}
                 >
-                  {publishing ? "Publishing..." : "Publish listing"}
+                  {publishing
+                    ? "Publishing..."
+                    : "Publish listing"}
                 </button>
               </div>
             </form>

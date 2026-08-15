@@ -2774,3 +2774,44 @@ main,
     border-left: none !important;
   }
 }
+/* Local development listing controls */
+
+.listing-bottom-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dev-delete-button {
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+  color: #596573;
+
+  cursor: pointer;
+
+  font-family:
+    "SFMono-Regular",
+    Consolas,
+    monospace;
+
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+
+  transition:
+    color 180ms ease,
+    transform 220ms var(--ease);
+}
+
+.dev-delete-button:hover {
+  color: #ff6b6b;
+  transform: translateY(-1px);
+}
+
+.dev-delete-button:disabled {
+  opacity: 0.45;
+  cursor: wait;
+}
