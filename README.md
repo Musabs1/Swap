@@ -1,16 +1,136 @@
-# React + Vite
+# Swap
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack local marketplace application for discovering, buying, and selling items within a community.
 
-Currently, two official plugins are available:
+Swap is designed around a simple idea: make local marketplace interactions fast, clean, and easy to understand without the clutter commonly found in larger marketplace platforms.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+> **Status:** Active development. The current development backend uses temporary in-memory listing storage while persistent cloud storage is being integrated.
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+* Create marketplace listings
+* Search listings by keyword
+* Filter listings by category
+* View live listing counts and marketplace activity
+* Responsive dark interface
+* Smooth scroll-triggered UI animations
+* REST API built with Express
+* Separate frontend and backend architecture
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+**Frontend**
+
+* React
+* Vite
+* JavaScript
+* CSS
+
+**Backend**
+
+* Node.js
+* Express
+* REST API
+
+**Planned Infrastructure**
+
+* Supabase PostgreSQL for persistent listing storage
+* Supabase Storage for listing images
+* Cloud deployment for a public live demo
+
+## Architecture
+
+```text
+React / Vite Frontend
+        |
+        | HTTP / JSON
+        v
+Express REST API
+        |
+        v
+Persistent Database
+```
+
+The frontend is responsible for the user interface, search, filtering, forms, and marketplace state.
+
+The Express backend exposes API endpoints used to create and retrieve listings. Persistent cloud database and image-storage integration are the next development steps.
+
+## Listing Flow
+
+When a user creates a listing:
+
+```text
+User completes listing form
+        |
+        v
+React validates and submits the form
+        |
+        | POST /api/listings
+        v
+Express API receives the listing
+        |
+        v
+Server creates the listing
+        |
+        v
+JSON response returned to React
+        |
+        v
+Marketplace UI updates
+```
+
+## Current API
+
+```text
+GET  /api/listings
+POST /api/listings
+GET  /
+```
+
+## Local Development
+
+Clone the repository:
+
+```bash
+git clone https://github.com/Musabs1/Swap.git
+cd Swap
+```
+
+Install frontend dependencies:
+
+```bash
+npm install
+```
+
+Install backend dependencies:
+
+```bash
+cd server
+npm install
+cd ..
+```
+
+Start both the Vite frontend and Express backend:
+
+```bash
+npm run dev
+```
+
+The frontend runs locally through Vite and communicates with the Express API on port `5000`.
+
+## Roadmap
+
+* Persistent database storage
+* Listing image uploads
+* User authentication
+* Seller profiles
+* Edit and delete listing functionality
+* Favorites
+* Improved marketplace search
+* Public cloud deployment
+
+## Project Goal
+
+Swap was built as a hands-on full-stack project to better understand how frontend applications, REST APIs, authentication, databases, and cloud services work together as one system.
+
+The project is actively being developed and expanded as new infrastructure and marketplace features are added.
